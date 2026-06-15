@@ -9,57 +9,47 @@ export function whatChanged(payload, data){
         });
     }
 
-
     // Check if component status changed
-    for(let i in data.subStatus){
-        for(let j in payload.subStatus){
-            if(data[i].name === payload[j].name && data[i].status != payload[j].status){
+    for(let oldSub of data.subStatus){
+        for(let newSub of payload.subStatus){
+            if(oldSub.name === newSub.name && oldSub.status !== newSub.status){
                 newAlerts.push({
                     type: 'COMPONENT_STATUS',
-                    message: `${data[i].name} changed from ${data[i].status} to ${payload[j].status}`
+                    message: `${oldSub.name} changed from ${oldSub.status} to ${newSub.status}`
                 })
             }
         }
     }
     
-    const previousIds = new Set(
-        data.activeIncidents.map(i => i.id)
-    );
-    const currentIds = new Set(
-        payload.activeIncidents.map(i => i.id)
-    );
+    const previousIds = new Set(data.activeIncidents.map(i => i.id));
+    const currentIds = new Set(payload.activeIncidents.map(i => i.id));
 
     // Check for new incidents
-    const newIncidents = currentIds.filter(i => !previousIds.has(i));
-    if(newIncidents.length !== 0){
-        for(let incident of newIncidents){
-            newAlerts.push({
-                type: 'NEW_INCIDENT',
-                message: `New incident - ${incident.title} ${incident.impact}`
-            });
-        }
+    const newIncidents = payload.activeIncidents.filter(i => !previousIds.has(i.id));
+    for(let incident of newIncidents){
+        newAlerts.push({
+            type: 'NEW_INCIDENT',
+            message: `New incident - ${incident.name} (Impact: ${incident.impact})`
+        });
     }
 
     // Check for resolved incidents
-    const resolvedIncidents = previousIds.filter(i => !currentIds.has(i));
-    if(resolvedIncidents.length !== 0){
-        for(let incident of resolvedIncidents){
-            newAlerts.push({
-                type: 'RESOLVED_INCIDENT',
-                message: `Resolved - ${incident.title}`
-            });
-        }
+    const resolvedIncidents = data.activeIncidents.filter(i => !currentIds.has(i.id));
+    for(let incident of resolvedIncidents){
+        newAlerts.push({
+            type: 'RESOLVED_INCIDENT',
+            message: `Resolved - ${incident.name}`
+        });
     }
 
     // Check for impact change of incidents
-    for(let i of data.activeIncidents){
-        for(let j of payload.activeIncidents){
-            if(i.id === j.id){
-                if(i.impact !== j.impact)
-                    newAlerts.push({
-                        type: 'IMPACT_CHANGE',
-                        message: `Impact of Incident - ${i.title} changed from ${i.impact} to ${j.impact}`
-                    })
+    for(let oldInc of data.activeIncidents){
+        for(let newInc of payload.activeIncidents){
+            if(oldInc.id === newInc.id && oldInc.impact !== newInc.impact) {
+                newAlerts.push({
+                    type: 'IMPACT_CHANGE',
+                    message: `Impact of Incident - ${oldInc.name} changed from ${oldInc.impact} to ${newInc.impact}`
+                })
             }
         }
     }
