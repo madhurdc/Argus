@@ -5,7 +5,6 @@ import { getLatestSnapshot, saveSnapshot } from "./snapshot.js";
 
 export default async function fetchHTML(){
     try{
-        console.log('\nStarting HTML fetch...');
         const url = "https://www.githubstatus.com/";
         
         const response = await axios.get(url);
@@ -14,7 +13,6 @@ export default async function fetchHTML(){
         const $ = cheerio.load(htmlData);
 
         await extractData($);
-        console.log('Fetch complete.');
     }
     catch(err){
         console.log("Error fetching the website content: " + err.message);
@@ -42,8 +40,11 @@ async function extractData($){
     
 
     $('.component-inner-container').each((i, e) => {
+        const name = $(e).find('.name').text().trim();
+        if (name === "Visit www.githubstatus.com for more information") return;
+        
         const subStat =  {
-            "name": $(e).find('.name').text().trim(),
+            "name": name,
             "status": $(e).attr('data-component-status')
         }
         subStatus.push(subStat);

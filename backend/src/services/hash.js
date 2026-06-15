@@ -11,12 +11,10 @@ export function generateHash(payload){
 }
 
 export async function compareHash(payload){
-    console.log('Comparing snapshot hashes...');
     const currentHash = generateHash(payload);
     const getData = await getLatestSnapshot();
     if(!getData){
         await saveSnapshot(payload, currentHash);
-        console.log('No previous snapshot found. Saved current state.');
         return;
     }
     const data = getData.payload;
@@ -24,7 +22,6 @@ export async function compareHash(payload){
 
     if(!previousHash){
         await saveSnapshot(payload, currentHash);
-        console.log('No previous snapshot found. Saved current state.');
         return;
     }
 
@@ -37,5 +34,4 @@ export async function compareHash(payload){
         }
         return;
     }
-    console.log('No changes detected.');
 }
